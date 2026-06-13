@@ -15,12 +15,12 @@ export async function createClient() {
         setAll(cookiesToSet) {
           try {
             cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
+              cookieStore.set(name, value, options),
             );
           } catch {}
         },
       },
-    }
+    },
   );
 }
 
@@ -38,19 +38,16 @@ export async function createServiceClient() {
         setAll(cookiesToSet) {
           try {
             cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
+              cookieStore.set(name, value, options),
             );
           } catch {}
         },
       },
-    }
+    },
   );
 }
 
-/**
- * Creates a client that authenticates via Bearer token from Authorization header.
- * Used by API routes called from external clients or test scripts.
- */
+// Creates a client that authenticates via Bearer token from Authorization header.
 export function createClientFromToken(accessToken: string) {
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -60,21 +57,18 @@ export function createClientFromToken(accessToken: string) {
         headers: { Authorization: `Bearer ${accessToken}` },
       },
       cookies: { getAll: () => [], setAll: () => {} },
-    }
+    },
   );
 }
 
-/**
- * Resolves a Supabase client from either cookies (browser) or Authorization header (API/test).
- * Call this inside Route Handlers by passing `request.headers`.
- */
+// Resolves a Supabase client from either cookies (browser) or Authorization header
 export async function createClientFromRequest(
-  requestHeaders: Headers
+  requestHeaders: Headers,
 ): Promise<ReturnType<typeof createClientFromToken>> {
   const authHeader = requestHeaders.get("Authorization");
   if (authHeader?.startsWith("Bearer ")) {
     return createClientFromToken(authHeader.slice(7));
   }
-  // Fall back to cookie-based client (cast is safe — same shape)
+  // Fall back to cookie-based client
   return createClient() as unknown as ReturnType<typeof createClientFromToken>;
 }

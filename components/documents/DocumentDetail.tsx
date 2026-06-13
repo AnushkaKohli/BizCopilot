@@ -43,9 +43,9 @@ const STATUS_STYLES: Record<string, string> = {
   error: "bg-red-500/10 text-red-400 border-red-500/20",
 };
 
-function CopyButton({ text, label = "Copy" }: { text: string; label?: string }) {
+function CopyButton ({ text, label = "Copy" }: { text: string; label?: string }) {
   const [copied, setCopied] = useState(false);
-  async function handleCopy() {
+  async function handleCopy () {
     await navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -61,7 +61,7 @@ function CopyButton({ text, label = "Copy" }: { text: string; label?: string }) 
   );
 }
 
-export default function DocumentDetail({
+export default function DocumentDetail ({
   doc,
   chatMessages,
   emailDrafts,
@@ -140,11 +140,10 @@ export default function DocumentDetail({
             <button
               key={id}
               onClick={() => setActiveTab(id)}
-              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
-                activeTab === id
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${activeTab === id
                   ? "bg-indigo-600 text-white"
                   : "text-slate-400 hover:text-white hover:bg-slate-800"
-              }`}
+                }`}
             >
               {icon}
               {label}
@@ -233,7 +232,16 @@ export default function DocumentDetail({
                           {key.replace(/_/g, " ")}
                         </div>
                         <div className="text-slate-200 text-sm flex-1">
-                          {Array.isArray(value) ? value.join(", ") : String(value ?? "—")}
+                          {/* {Array.isArray(value) ? value.join(", ") : String(value ?? "—")} */}
+                          {Array.isArray(value)
+                            ? value.map(item =>
+                              typeof item === "object" && item !== null
+                                ? JSON.stringify(item)
+                                : String(item)
+                            ).join(", ")
+                            : typeof value === "object" && value !== null
+                              ? JSON.stringify(value, null, 2)
+                              : String(value ?? "—")}
                         </div>
                       </div>
                     ))}
@@ -280,23 +288,21 @@ export default function DocumentDetail({
                         >
                           <div className="flex items-start gap-3">
                             <AlertTriangle
-                              className={`w-4 h-4 mt-0.5 shrink-0 ${
-                                risk.severity === "critical"
+                              className={`w-4 h-4 mt-0.5 shrink-0 ${risk.severity === "critical"
                                   ? "text-red-400"
                                   : risk.severity === "high"
-                                  ? "text-orange-400"
-                                  : risk.severity === "medium"
-                                  ? "text-amber-400"
-                                  : "text-green-400"
-                              }`}
+                                    ? "text-orange-400"
+                                    : risk.severity === "medium"
+                                      ? "text-amber-400"
+                                      : "text-green-400"
+                                }`}
                             />
                             <div className="flex-1">
                               <p className="text-slate-200 text-sm">{risk.description}</p>
                               <div className="flex items-center gap-2 mt-2">
                                 <span
-                                  className={`text-xs px-2 py-0.5 rounded-full border capitalize ${
-                                    SEVERITY_STYLES[risk.severity] ?? SEVERITY_STYLES.medium
-                                  }`}
+                                  className={`text-xs px-2 py-0.5 rounded-full border capitalize ${SEVERITY_STYLES[risk.severity] ?? SEVERITY_STYLES.medium
+                                    }`}
                                 >
                                   {risk.severity}
                                 </span>

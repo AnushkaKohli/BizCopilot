@@ -18,12 +18,12 @@ const navItems = [
   { href: "/upload", label: "Upload", icon: Upload },
 ];
 
-export default function Sidebar({ profile }: { profile: Profile | null }) {
+export default function Sidebar ({ profile }: { profile: Profile | null }) {
   const pathname = usePathname();
   const router = useRouter();
   const supabase = createClient();
 
-  async function handleSignOut() {
+  async function handleSignOut () {
     await supabase.auth.signOut();
     router.push("/login");
     router.refresh();
@@ -31,11 +31,11 @@ export default function Sidebar({ profile }: { profile: Profile | null }) {
 
   const initials = profile?.full_name
     ? profile.full_name
-        .split(" ")
-        .map((n) => n[0])
-        .slice(0, 2)
-        .join("")
-        .toUpperCase()
+      .split(" ")
+      .map((n) => n[0])
+      .slice(0, 2)
+      .join("")
+      .toUpperCase()
     : "?";
 
   return (
@@ -59,11 +59,10 @@ export default function Sidebar({ profile }: { profile: Profile | null }) {
             <Link
               key={href}
               href={href}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors group ${
-                active
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors group ${active
                   ? "bg-indigo-600 text-white"
                   : "text-slate-400 hover:text-white hover:bg-slate-800"
-              }`}
+                }`}
             >
               <Icon className="w-4 h-4 shrink-0" />
               {label}
@@ -96,7 +95,7 @@ export default function Sidebar({ profile }: { profile: Profile | null }) {
           </div>
           <button
             onClick={handleSignOut}
-            className="text-slate-500 hover:text-white transition-colors"
+            className="text-slate-500 hover:text-white hover:cursor-pointer transition-colors"
             title="Sign out"
           >
             <LogOut className="w-4 h-4" />
