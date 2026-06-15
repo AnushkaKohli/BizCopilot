@@ -21,12 +21,14 @@ const PRIORITY_STYLES = {
 
 export default function ActionItemList({
   documentId,
-  actionItems: initial,
+  actionItems,
+  onUpdate,
 }: {
   documentId: string;
   actionItems: ActionItem[];
+  onUpdate?: (items: ActionItem[]) => void;
 }) {
-  const [items, setItems] = useState<ActionItem[]>(initial);
+  const [items, setItems] = useState<ActionItem[]>(actionItems);
   const [saving, setSaving] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const supabase = createClient();
@@ -37,6 +39,7 @@ export default function ActionItemList({
       item.id === id ? { ...item, completed: !item.completed } : item
     );
     setItems(updated);
+    onUpdate?.(updated);
 
     // Update the full analysis in DB
     const { data: doc } = await supabase

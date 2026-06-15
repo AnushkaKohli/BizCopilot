@@ -76,8 +76,9 @@ export default function DocumentDetail ({
 }) {
   const [activeTab, setActiveTab] = useState<Tab>("summary");
   const analysis = doc.analysis;
+  const [actionItems, setActionItems] = useState<ActionItem[]>(analysis?.action_items ?? []);
 
-  const pendingActions = (analysis?.action_items ?? []).filter((a) => !a.completed).length;
+  const pendingActions = actionItems.filter((a) => !a.completed).length;
   const criticalRisks = (analysis?.risks ?? []).filter(
     (r) => r.severity === "critical" || r.severity === "high"
   ).length;
@@ -141,8 +142,8 @@ export default function DocumentDetail ({
               key={id}
               onClick={() => setActiveTab(id)}
               className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${activeTab === id
-                  ? "bg-indigo-600 text-white"
-                  : "text-slate-400 hover:text-white hover:bg-slate-800"
+                ? "bg-indigo-600 text-white"
+                : "text-slate-400 hover:text-white hover:bg-slate-800"
                 }`}
             >
               {icon}
@@ -227,22 +228,39 @@ export default function DocumentDetail ({
                   </div>
                   <div className="divide-y divide-slate-800">
                     {Object.entries(analysis.key_information ?? {}).map(([key, value]) => (
-                      <div key={key} className="flex items-start gap-4 px-6 py-3">
-                        <div className="text-slate-500 text-sm capitalize w-1/3 shrink-0 pt-0.5">
+                      <div key={key} className="px-6 py-3">
+                        <div className="text-slate-500 text-xs uppercase tracking-wide mb-1">
                           {key.replace(/_/g, " ")}
                         </div>
-                        <div className="text-slate-200 text-sm flex-1">
-                          {/* {Array.isArray(value) ? value.join(", ") : String(value ?? "—")} */}
-                          {Array.isArray(value)
-                            ? value.map(item =>
-                              typeof item === "object" && item !== null
-                                ? JSON.stringify(item)
-                                : String(item)
-                            ).join(", ")
-                            : typeof value === "object" && value !== null
-                              ? JSON.stringify(value, null, 2)
-                              : String(value ?? "—")}
-                        </div>
+                        {Array.isArray(value) ? (
+                          <div className="space-y-1">
+                            {value.map((item, i) =>
+                              typeof item === "object" && item !== null ? (
+                                <div key={i} className="bg-slate-800 rounded-lg px-3 py-2 space-y-1">
+                                  {Object.entries(item).map(([k, v]) => (
+                                    <div key={k} className="flex gap-2 text-sm">
+                                      <span className="text-slate-500 capitalize shrink-0">{String(k).replace(/_/g, " ")}:</span>
+                                      <span className="text-slate-200">{String(v ?? "—")}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : (
+                                <div key={i} className="text-slate-200 text-sm">{String(item)}</div>
+                              )
+                            )}
+                          </div>
+                        ) : typeof value === "object" && value !== null ? (
+                          <div className="bg-slate-800 rounded-lg px-3 py-2 space-y-1">
+                            {Object.entries(value).map(([k, v]) => (
+                              <div key={k} className="flex gap-2 text-sm">
+                                <span className="text-slate-500 capitalize shrink-0">{k.replace(/_/g, " ")}:</span>
+                                <span className="text-slate-200">{String(v ?? "—")}</span>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="text-slate-200 text-sm">{String(value ?? "—")}</div>
+                        )}
                       </div>
                     ))}
                     {Object.keys(analysis.key_information ?? {}).length === 0 && (
@@ -258,7 +276,8 @@ export default function DocumentDetail ({
               {activeTab === "actions" && (
                 <ActionItemList
                   documentId={doc.id}
-                  actionItems={analysis.action_items ?? []}
+                  actionItems={actionItems}
+                  onUpdate={setActionItems}
                 />
               )}
 
@@ -289,12 +308,12 @@ export default function DocumentDetail ({
                           <div className="flex items-start gap-3">
                             <AlertTriangle
                               className={`w-4 h-4 mt-0.5 shrink-0 ${risk.severity === "critical"
-                                  ? "text-red-400"
-                                  : risk.severity === "high"
-                                    ? "text-orange-400"
-                                    : risk.severity === "medium"
-                                      ? "text-amber-400"
-                                      : "text-green-400"
+                                ? "text-red-400"
+                                : risk.severity === "high"
+                                  ? "text-orange-400"
+                                  : risk.severity === "medium"
+                                    ? "text-amber-400"
+                                    : "text-green-400"
                                 }`}
                             />
                             <div className="flex-1">
