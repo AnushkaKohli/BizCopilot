@@ -1,9 +1,7 @@
 -- Enable pgvector extension for RAG embeddings
 create extension if not exists vector;
 
--- ============================================================
--- PROFILES
--- ============================================================
+-- Profiles
 create table public.profiles (
   id          uuid primary key references auth.users(id) on delete cascade,
   email       text,
@@ -47,9 +45,7 @@ create trigger on_auth_user_created
   after insert on auth.users
   for each row execute procedure public.handle_new_user();
 
--- ============================================================
--- DOCUMENTS
--- ============================================================
+-- Documents
 create table public.documents (
   id            uuid primary key default gen_random_uuid(),
   user_id       uuid not null references public.profiles(id) on delete cascade,
@@ -97,9 +93,7 @@ create trigger documents_updated_at
   before update on public.documents
   for each row execute procedure public.handle_updated_at();
 
--- ============================================================
--- DOCUMENT CHUNKS (RAG — pgvector)
--- ============================================================
+-- Document chunks (RAG — pgvector)
 create table public.document_chunks (
   id            uuid primary key default gen_random_uuid(),
   document_id   uuid not null references public.documents(id) on delete cascade,
@@ -168,9 +162,7 @@ begin
 end;
 $$;
 
--- ============================================================
--- CHAT MESSAGES
--- ============================================================
+-- Chat messages
 create table public.chat_messages (
   id          uuid primary key default gen_random_uuid(),
   document_id uuid not null references public.documents(id) on delete cascade,
@@ -190,9 +182,7 @@ create policy "Users can insert own chat messages"
   on public.chat_messages for insert
   with check (auth.uid() = user_id);
 
--- ============================================================
--- EMAIL DRAFTS
--- ============================================================
+-- Email Drafts
 create table public.email_drafts (
   id             uuid primary key default gen_random_uuid(),
   document_id    uuid not null references public.documents(id) on delete cascade,
@@ -216,9 +206,7 @@ create policy "Users can delete own email drafts"
   on public.email_drafts for delete
   using (auth.uid() = user_id);
 
--- ============================================================
--- STORAGE BUCKET
--- ============================================================
+-- Storage Buckets
 insert into storage.buckets (id, name, public)
 values ('documents', 'documents', false)
 on conflict (id) do nothing;

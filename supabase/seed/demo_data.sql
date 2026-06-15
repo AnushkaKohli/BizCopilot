@@ -1,12 +1,3 @@
--- ============================================================
--- DEMO SEED DATA
--- Run this AFTER creating the demo user in Supabase Auth dashboard.
--- 1. Go to Authentication > Users > Add User
--- 2. Email: demo@bizcopilot.app  Password: (set in .env as DEMO_USER_PASSWORD)
--- 3. Copy the generated UUID and replace DEMO_USER_ID below
--- ============================================================
-
--- Replace this with the actual demo user UUID from Supabase Auth
 do $$
 declare
   demo_user_id uuid;

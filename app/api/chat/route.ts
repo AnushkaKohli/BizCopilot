@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
-import { createClientFromRequest, createServiceClient } from "@/lib/supabase/server";
+import {
+  createClientFromRequest,
+  createServiceClient,
+} from "@/lib/supabase/server";
 import { openai, getEmbeddingsModel, CHAT_SYSTEM_PROMPT } from "@/lib/openai";
 
 export async function POST(request: Request) {
@@ -9,7 +12,7 @@ export async function POST(request: Request) {
     if (!documentId || !message) {
       return NextResponse.json(
         { error: "documentId and message required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -32,7 +35,10 @@ export async function POST(request: Request) {
       .single();
 
     if (!doc) {
-      return NextResponse.json({ error: "Document not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Document not found" },
+        { status: 404 },
+      );
     }
 
     // Save user message
@@ -48,20 +54,24 @@ export async function POST(request: Request) {
     const queryEmbedding = await embeddingsModel.embedQuery(message);
 
     // Vector similarity search for relevant chunks
-    const { data: chunks } = await serviceSupabase.rpc("match_document_chunks", {
-      query_embedding: queryEmbedding,
-      match_document_id: documentId,
-      match_count: 5,
-    });
+    const { data: chunks } = await serviceSupabase.rpc(
+      "match_document_chunks",
+      {
+        query_embedding: queryEmbedding,
+        match_document_id: documentId,
+        match_count: 5,
+      },
+    );
 
     const context =
       chunks && chunks.length > 0
         ? chunks
-            .map((c: { content: string; similarity: number }, i: number) =>
-              `[Excerpt ${i + 1}]:\n${c.content}`
+            .map(
+              (c: { content: string; similarity: number }, i: number) =>
+                `[Excerpt ${i + 1}]:\n${c.content}`,
             )
             .join("\n\n")
-        : doc.raw_text?.slice(0, 8000) ?? "No document text available.";
+        : (doc.raw_text?.slice(0, 8000) ?? "No document text available.");
 
     // Fetch recent chat history
     const { data: history } = await supabase
@@ -91,17 +101,22 @@ export async function POST(request: Request) {
       ],
     });
 
-    // Return as a readable stream (SSE-compatible)
+    // Return as a readable stream (text to bytes)
     const encoder = new TextEncoder();
     let fullResponse = "";
 
+    // Stream the response from AI
     const readable = new ReadableStream({
       async start(controller) {
         for await (const chunk of stream) {
           const delta = chunk.choices[0]?.delta?.content ?? "";
           if (delta) {
+            // Stores the full assistant reply as it streams in
             fullResponse += delta;
-            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ delta })}\n\n`));
+            controller.enqueue(
+              // converts text into bytes before sending it to the client
+              encoder.encode(`data: ${JSON.stringify({ delta })}\n\n`),
+            );
           }
         }
 
@@ -129,7 +144,7 @@ export async function POST(request: Request) {
     console.error("Chat error:", err);
     return NextResponse.json(
       { error: err instanceof Error ? err.message : "Chat failed" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
